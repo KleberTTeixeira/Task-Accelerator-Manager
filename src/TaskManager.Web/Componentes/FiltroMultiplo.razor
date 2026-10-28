@@ -1,0 +1,38 @@
+@typeparam T
+
+<details class="filtro @(Selecionados.Count > 0 ? "ativo" : "")">
+    <summary class="action">
+        <Icone Id="i-filter" />@Rotulo@(Selecionados.Count > 0 ? $" ({Selecionados.Count})" : "")
+    </summary>
+    <div class="filtro-lista">
+        @foreach (var opcao in Opcoes)
+        {
+            <label class="filtro-item">
+                <input type="checkbox" class="chk" checked="@Selecionados.Contains(opcao)"
+                       @onchange="e => Alternar(opcao, e.Value is true)" />
+                <span>@Texto(opcao)</span>
+            </label>
+        }
+    </div>
+</details>
+
+@code {
+    [Parameter, EditorRequired] public string Rotulo { get; set; } = string.Empty;
+    [Parameter, EditorRequired] public IEnumerable<T> Opcoes { get; set; } = [];
+
+    /// <summary>Valores marcados; conjunto vazio significa sem filtro.</summary>
+    [Parameter, EditorRequired] public HashSet<T> Selecionados { get; set; } = [];
+
+    [Parameter, EditorRequired] public Func<T, string> Texto { get; set; } = v => v?.ToString() ?? string.Empty;
+    [Parameter] public EventCallback AoAlterar { get; set; }
+
+    private async Task Alternar(T opcao, bool marcado)
+    {
+        if (marcado)
+            Selecionados.Add(opcao);
+        else
+            Selecionados.Remove(opcao);
+
+        await AoAlterar.InvokeAsync();
+    }
+}

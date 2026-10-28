@@ -1,0 +1,28 @@
+<div class="modal show d-block" tabindex="-1" role="dialog" aria-modal="true" aria-label="@Titulo">
+    <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable @(Larga ? "modal-lg" : "")">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title">@Titulo</h2>
+                <button type="button" class="btn-close" aria-label="Fechar" @onclick="AoFechar"></button>
+            </div>
+            <div class="modal-body">
+                @ChildContent
+            </div>
+            @if (Rodape is not null)
+            {
+                <div class="modal-footer">
+                    @Rodape
+                </div>
+            }
+        </div>
+    </div>
+</div>
+<div class="modal-backdrop show"></div>
+
+@code {
+    [Parameter, EditorRequired] public string Titulo { get; set; } = string.Empty;
+    [Parameter] public bool Larga { get; set; }
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+    [Parameter] public RenderFragment? Rodape { get; set; }
+    [Parameter] public EventCallback AoFechar { get; set; }
+}

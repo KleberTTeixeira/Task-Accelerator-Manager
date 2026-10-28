@@ -1,0 +1,620 @@
+﻿@page "/"
+@using TaskManager.Web.Servicos
+@inject EstadoAgenda Estado
+
+<PageTitle>@TituloPagina</PageTitle>
+
+<div class="cover"></div>
+
+@if (!carregado)
+{
+    <p class="carregando">Carregando…</p>
+}
+else
+{
+    <div class="app">
+        <nav class="side-tabs" role="tablist" aria-label="Visualização">
+            <button type="button" role="tab" class="side-tab @(visao == Visao.Diario ? "active" : "")"
+                    aria-selected="@(visao == Visao.Diario ? "true" : "false")" @onclick="() => visao = Visao.Diario">
+                <span>Diário</span>
+            </button>
+            <button type="button" role="tab" class="side-tab @(visao == Visao.Semanal ? "active" : "")"
+                    aria-selected="@(visao == Visao.Semanal ? "true" : "false")" @onclick="() => visao = Visao.Semanal">
+                <span>Semanal</span>
+            </button>
+        </nav>
+
+        <main class="page">
+            <div class="page-icon"><svg aria-hidden="true"><use href="#i-calendar" /></svg></div>
+            <h1 class="page-title">@TituloPagina</h1>
+            <div class="divider"></div>
+
+            <div class="actions">
+                <button type="button" class="action" @onclick="NovaTarefa"><Icone Id="i-arrow" />Nova Tarefa</button>
+                <button type="button" class="action" @onclick="() => janela = Janela.Restaurar"><Icone Id="i-restore" />Restaurar demonstração</button>
+                <button type="button" class="action" @onclick="AbrirFuso"><Icone Id="i-globe" />Fuso horário: @Formatos.Fuso(Agenda.Fuso, AgoraUtc)</button>
+            </div>
+
+            <div class="navegacao">
+                <button type="button" class="action nav-btn" aria-label="@(visao == Visao.Diario ? "Dia anterior" : "Semana anterior")"
+                        @onclick="() => Mover(-Passo)"><Icone Id="i-chevron-left" /></button>
+                <input type="date" class="date-picker" aria-label="Data selecionada"
+                       value="@dataSelecionada.ToString("yyyy-MM-dd")" @onchange="MudarData" />
+                <button type="button" class="action nav-btn" aria-label="@(visao == Visao.Diario ? "Próximo dia" : "Próxima semana")"
+                        @onclick="() => Mover(Passo)"><Icone Id="i-chevron-right" /></button>
+                <button type="button" class="action" @onclick="IrParaHoje">Hoje</button>
+                <span class="data-extenso">
+                    @if (visao == Visao.Diario)
+                    {
+                        @Formatos.DataPorExtenso(dataSelecionada)
+                    }
+                    else
+                    {
+                        @($"Semana de {Formatos.Data(Semana[0])} a {Formatos.Data(Semana[6])}")
+                    }
+                </span>
+            </div>
+
+            @if (visao == Visao.Diario)
+            {
+                var painel = Agenda.Painel(dataSelecionada, AgoraUtc);
+                var doDia = Agenda.AgendaDoDia(dataSelecionada, filtro);
+                var pendencias = Agenda.PendenciasAnteriores(dataSelecionada, AgoraUtc);
+
+                <section class="painel" aria-label="Painel do dia">
+                    <div class="indicador"><span class="indicador-valor">@painel.Total</span><span class="indicador-rotulo">Total do dia</span></div>
+                    <div class="indicador"><span class="indicador-valor">@painel.Pendentes</span><span class="indicador-rotulo">Pendentes</span></div>
+                    <div class="indicador"><span class="indicador-valor">@painel.EmAndamento</span><span class="indicador-rotulo">Em andamento</span></div>
+                    <div class="indicador"><span class="indicador-valor">@painel.Concluidas</span><span class="indicador-rotulo">Concluídas</span></div>
+                    <div class="indicador indicador-separado"><span class="indicador-valor">@painel.PendenciasAnteriores</span><span class="indicador-rotulo">Pendências anteriores</span></div>
+                </section>
+
+                <div class="filtros">
+                    <FiltroMultiplo T="string" Rotulo="Categoria" Opcoes="Categorias.Todas" Selecionados="filtro.Categorias" Texto="c => c" AoAlterar="() => { }" />
+                    <FiltroMultiplo T="Prioridade" Rotulo="Prioridade" Opcoes="Enum.GetValues<Prioridade>()" Selecionados="filtro.Prioridades" Texto="p => p.Texto()" AoAlterar="() => { }" />
+                    <FiltroMultiplo T="Status" Rotulo="Status" Opcoes="Enum.GetValues<Status>()" Selecionados="filtro.Status" Texto="s => s.Texto()" AoAlterar="() => { }" />
+                    @if (FiltroAtivo)
+                    {
+                        <button type="button" class="action" @onclick="LimparFiltros">Limpar filtros</button>
+                    }
+                </div>
+
+                <div class="table-wrap">
+                    <table class="db">
+                        <colgroup>
+                            <col class="w-check" />
+                            <col class="w-time" />
+                            <col />
+                            <col class="w-prio" />
+                            <col class="w-cat" />
+                            <col class="w-status" />
+                            <col class="w-acoes" />
+                        </colgroup>
+                        <thead>
+                            <tr>
+                                <th><span class="th"><Icone Id="i-checkbox" /></span></th>
+                                <th><span class="th"><Icone Id="i-clock" />Horário</span></th>
+                                <th><span class="th"><Icone Id="i-arrow" />Tarefa</span></th>
+                                <th><span class="th"><Icone Id="i-eject" /><span class="th-label">Prioridade</span></span></th>
+                                <th><span class="th"><Icone Id="i-archive" />Categoria</span></th>
+                                <th><span class="th"><Icone Id="i-check-circle" />Status</span></th>
+                                <th><span class="visually-hidden">Ações</span></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @if (doDia.Count == 0)
+                            {
+                                <tr class="empty">
+                                    <td colspan="7">@(FiltroAtivo ? "Nenhuma atividade com os filtros escolhidos." : "Nenhuma atividade nesta data.")</td>
+                                </tr>
+                            }
+                            @foreach (var ocorrencia in doDia)
+                            {
+                                <tr class="@(ocorrencia.Status == Status.Concluida ? "feita" : "")">
+                                    <td class="c-check">
+                                        <input type="checkbox" class="chk" aria-label="Concluir @ocorrencia.Titulo"
+                                               checked="@(ocorrencia.Status == Status.Concluida)"
+                                               @onchange="e => Marcar((ocorrencia, e.Value is true))" />
+                                    </td>
+                                    <td class="c-time" data-rotulo="Horário">@Formatos.Hora(ocorrencia.HorarioInicio) – @Formatos.Hora(ocorrencia.HorarioTermino)</td>
+                                    <td class="c-task">
+                                        <div class="task">
+                                            <Icone Id="i-arrow" />
+                                            <span class="task-name" title="Editar" @onclick="() => Editar(ocorrencia)">@ocorrencia.Titulo</span>
+                                            @if (ocorrencia.Recorrente)
+                                            {
+                                                <span class="tag tag-freq" title="Frequência"><Icone Id="i-repeat" />@ocorrencia.Frequencia.Texto()</span>
+                                            }
+                                        </div>
+                                    </td>
+                                    <td data-rotulo="Prioridade"><span class="tag @Formatos.ClassePrioridade(ocorrencia.Prioridade)">@ocorrencia.Prioridade.Texto()</span></td>
+                                    <td data-rotulo="Categoria"><span class="tag @Formatos.ClasseCategoria(ocorrencia.Categoria)">@ocorrencia.Categoria</span></td>
+                                    <td data-rotulo="Status">
+                                        <select class="edit-select status-select @Formatos.ClasseStatus(ocorrencia.Status)" aria-label="Status de @ocorrencia.Titulo"
+                                                value="@ocorrencia.Status" @onchange="e => MudarStatus(ocorrencia, e)">
+                                            @foreach (var status in Enum.GetValues<Status>())
+                                            {
+                                                <option value="@status">@status.Texto()</option>
+                                            }
+                                        </select>
+                                    </td>
+                                    <td class="c-acoes">
+                                        <div class="acoes">
+                                            <button type="button" class="link" @onclick="() => Editar(ocorrencia)"><Icone Id="i-pencil" />Editar</button>
+                                            <button type="button" class="link" @onclick="() => Excluir(ocorrencia)"><Icone Id="i-trash" />Excluir</button>
+                                        </div>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+
+                <section class="secao" aria-label="Pendências anteriores">
+                    <h2 class="secao-titulo">Pendências anteriores <span class="contador">@pendencias.Count</span></h2>
+                    <p class="secao-ajuda">Atividades Pendente ou Em andamento dos 7 dias anteriores à data selecionada.</p>
+                    <div class="table-wrap">
+                        <table class="db db-pendencias">
+                            <colgroup>
+                                <col />
+                                <col class="w-data" />
+                                <col class="w-prio" />
+                                <col class="w-status" />
+                                <col class="w-acoes-pend" />
+                            </colgroup>
+                            <thead>
+                                <tr>
+                                    <th><span class="th"><Icone Id="i-arrow" />Título</span></th>
+                                    <th><span class="th"><Icone Id="i-clock" />Data original</span></th>
+                                    <th><span class="th"><Icone Id="i-eject" /><span class="th-label">Prioridade</span></span></th>
+                                    <th><span class="th"><Icone Id="i-check-circle" />Status</span></th>
+                                    <th><span class="visually-hidden">Ações</span></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @if (pendencias.Count == 0)
+                                {
+                                    <tr class="empty"><td colspan="5">Nenhuma pendência anterior.</td></tr>
+                                }
+                                @foreach (var pendencia in pendencias)
+                                {
+                                    <tr>
+                                        <td class="c-task"><div class="task"><Icone Id="i-arrow" /><span class="task-titulo">@pendencia.Titulo</span></div></td>
+                                        <td data-rotulo="Data original">@Formatos.Data(pendencia.DataOriginal)</td>
+                                        <td data-rotulo="Prioridade"><span class="tag @Formatos.ClassePrioridade(pendencia.Prioridade)">@pendencia.Prioridade.Texto()</span></td>
+                                        <td data-rotulo="Status"><span class="tag @Formatos.ClasseStatus(pendencia.Status)">@pendencia.Status.Texto()</span></td>
+                                        <td class="c-acoes">
+                                            <div class="acoes">
+                                                <button type="button" class="link" @onclick="() => ConcluirPendencia(pendencia)"><Icone Id="i-check-circle" />Concluir</button>
+                                                <button type="button" class="link" @onclick="() => Reagendar(pendencia)"><Icone Id="i-clock" />Reagendar</button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </section>
+            }
+            else
+            {
+                <VisaoSemanal Agenda="Agenda" Dias="Semana" Hoje="Estado.Hoje"
+                              AoAbrirDia="AbrirDia" AoEditar="Editar" AoMarcar="Marcar" />
+            }
+        </main>
+    </div>
+
+    @switch (janela)
+    {
+        case Janela.Formulario:
+            <JanelaModal Titulo="@TituloFormulario" Larga="true" AoFechar="Fechar">
+                <ChildContent>
+                    <FormularioAtividade Modo="modo" Campos="campos" Fuso="Agenda.Fuso" Erros="erros" />
+                </ChildContent>
+                <Rodape>
+                    <button type="button" class="btn btn-outline-secondary" @onclick="Fechar">Cancelar</button>
+                    <button type="button" class="btn btn-primary" @onclick="Salvar">Salvar</button>
+                </Rodape>
+            </JanelaModal>
+            break;
+
+        case Janela.EscolhaEdicao:
+            <JanelaModal Titulo="Editar atividade recorrente" AoFechar="Fechar">
+                <ChildContent>
+                    <p class="mb-0">A alteração de <strong>@ocorrenciaAtual!.Titulo</strong> vale para:</p>
+                </ChildContent>
+                <Rodape>
+                    <button type="button" class="btn btn-outline-secondary" @onclick="Fechar">Cancelar</button>
+                    <button type="button" class="btn btn-outline-primary" @onclick="() => AbrirEdicao(ModoFormulario.Ocorrencia)">Só esta ocorrência</button>
+                    <button type="button" class="btn btn-primary" @onclick="() => AbrirEdicao(ModoFormulario.Serie)">Série completa</button>
+                </Rodape>
+            </JanelaModal>
+            break;
+
+        case Janela.EscolhaExclusao:
+            <JanelaModal Titulo="Excluir atividade recorrente" AoFechar="Fechar">
+                <ChildContent>
+                    <p class="mb-0">Excluir <strong>@ocorrenciaAtual!.Titulo</strong> de @Formatos.Data(ocorrenciaAtual.Data):</p>
+                </ChildContent>
+                <Rodape>
+                    <button type="button" class="btn btn-outline-secondary" @onclick="Fechar">Cancelar</button>
+                    <button type="button" class="btn btn-outline-danger" @onclick="ExcluirOcorrencia">Só esta ocorrência</button>
+                    <button type="button" class="btn btn-danger" @onclick="ExcluirSerie">Série completa</button>
+                </Rodape>
+            </JanelaModal>
+            break;
+
+        case Janela.ConfirmarExclusao:
+            <JanelaModal Titulo="Excluir atividade" AoFechar="Fechar">
+                <ChildContent>
+                    <p class="mb-0">Excluir <strong>@ocorrenciaAtual!.Titulo</strong>?</p>
+                </ChildContent>
+                <Rodape>
+                    <button type="button" class="btn btn-outline-secondary" @onclick="Fechar">Cancelar</button>
+                    <button type="button" class="btn btn-danger" @onclick="ExcluirSerie">Excluir</button>
+                </Rodape>
+            </JanelaModal>
+            break;
+
+        case Janela.Restaurar:
+            <JanelaModal Titulo="Restaurar demonstração" AoFechar="Fechar">
+                <ChildContent>
+                    <p class="mb-0">Todos os dados atuais serão apagados e substituídos pelos dados de demonstração. Deseja continuar?</p>
+                </ChildContent>
+                <Rodape>
+                    <button type="button" class="btn btn-outline-secondary" @onclick="Fechar">Cancelar</button>
+                    <button type="button" class="btn btn-danger" @onclick="Restaurar">Restaurar</button>
+                </Rodape>
+            </JanelaModal>
+            break;
+
+        case Janela.Fuso:
+            <JanelaModal Titulo="Fuso horário" AoFechar="Fechar">
+                <ChildContent>
+                    <p class="form-text mt-0">As datas e os horários são exibidos no fuso escolhido.</p>
+                    <label class="form-label" for="f-busca-fuso">Buscar</label>
+                    <input id="f-busca-fuso" class="form-control mb-2" placeholder="Ex.: Lisbon, Sao_Paulo" @bind="buscaFuso" @bind:event="oninput" />
+                    <select class="form-select" size="10" aria-label="Fusos horários" @bind="fusoEscolhido">
+                        @foreach (var fuso in FusosEncontrados)
+                        {
+                            <option value="@fuso.Id">@Formatos.Fuso(fuso, AgoraUtc)</option>
+                        }
+                    </select>
+                </ChildContent>
+                <Rodape>
+                    <button type="button" class="btn btn-outline-secondary" @onclick="Fechar">Cancelar</button>
+                    <button type="button" class="btn btn-primary" @onclick="GravarFuso">Salvar</button>
+                </Rodape>
+            </JanelaModal>
+            break;
+    }
+}
+
+@code {
+    private enum Visao { Diario, Semanal }
+
+    private enum Janela { Nenhuma, Formulario, EscolhaEdicao, EscolhaExclusao, ConfirmarExclusao, Restaurar, Fuso }
+
+    private const string ErroHorarioInexistente =
+        "O horário informado não existe no fuso configurado nesta data (mudança do horário de verão).";
+
+    private bool carregado;
+    private Visao visao = Visao.Diario;
+    private DateOnly dataSelecionada;
+    private readonly FiltroAgenda filtro = new();
+
+    private Janela janela;
+    private Ocorrencia? ocorrenciaAtual;
+    private ModoFormulario modo;
+    private CamposAtividade campos = new();
+    private IReadOnlyList<string> erros = [];
+    private string buscaFuso = string.Empty;
+    private string fusoEscolhido = string.Empty;
+
+    private Agenda Agenda => Estado.Agenda;
+    private DateTime AgoraUtc => Estado.AgoraUtc;
+
+    private string TituloPagina => visao == Visao.Diario ? "Planejamento Diário" : "Planejamento Semanal";
+
+    private int Passo => visao == Visao.Diario ? 1 : 7;
+
+    private bool FiltroAtivo => filtro.Categorias.Count > 0 || filtro.Prioridades.Count > 0 || filtro.Status.Count > 0;
+
+    /// <summary>Segunda a domingo da semana da data selecionada.</summary>
+    private IReadOnlyList<DateOnly> Semana
+    {
+        get
+        {
+            var segunda = dataSelecionada.AddDays(-(((int)dataSelecionada.DayOfWeek + 6) % 7));
+            return Enumerable.Range(0, 7).Select(segunda.AddDays).ToList();
+        }
+    }
+
+    private string TituloFormulario => modo switch
+    {
+        ModoFormulario.Nova => "Nova atividade",
+        ModoFormulario.Serie => "Editar série completa",
+        ModoFormulario.Ocorrencia => "Editar só esta ocorrência",
+        ModoFormulario.Reagendar => "Reagendar pendência",
+        _ => "Editar atividade"
+    };
+
+    private IEnumerable<TimeZoneInfo> FusosEncontrados =>
+        FusoHorario.Todos().Where(f => string.IsNullOrWhiteSpace(buscaFuso)
+            || f.Id.Contains(buscaFuso.Trim().Replace(' ', '_'), StringComparison.OrdinalIgnoreCase));
+
+    protected override async Task OnInitializedAsync()
+    {
+        await Estado.CarregarAsync();
+        dataSelecionada = Estado.Hoje;
+        carregado = true;
+    }
+
+    // Navegação
+
+    private void Mover(int dias) => dataSelecionada = dataSelecionada.AddDays(dias);
+
+    private void IrParaHoje() => dataSelecionada = Estado.Hoje;
+
+    private void MudarData(ChangeEventArgs e)
+    {
+        if (DateOnly.TryParseExact(e.Value?.ToString(), "yyyy-MM-dd", out var data))
+            dataSelecionada = data;
+    }
+
+    private void AbrirDia(DateOnly dia)
+    {
+        dataSelecionada = dia;
+        visao = Visao.Diario;
+    }
+
+    private void LimparFiltros()
+    {
+        filtro.Categorias.Clear();
+        filtro.Prioridades.Clear();
+        filtro.Status.Clear();
+    }
+
+    // Status
+
+    private async Task Marcar((Ocorrencia Ocorrencia, bool Marcada) marcacao)
+    {
+        Agenda.AlterarStatus(marcacao.Ocorrencia.AtividadeId, marcacao.Ocorrencia.OriginalUtc,
+            marcacao.Marcada ? Status.Concluida : Status.Pendente);
+        await Estado.SalvarAsync();
+    }
+
+    private async Task MudarStatus(Ocorrencia ocorrencia, ChangeEventArgs e)
+    {
+        if (!Enum.TryParse<Status>(e.Value?.ToString(), out var status))
+            return;
+
+        Agenda.AlterarStatus(ocorrencia.AtividadeId, ocorrencia.OriginalUtc, status);
+        await Estado.SalvarAsync();
+    }
+
+    private async Task ConcluirPendencia(Ocorrencia pendencia)
+    {
+        Agenda.Concluir(pendencia.AtividadeId, pendencia.OriginalUtc);
+        await Estado.SalvarAsync();
+    }
+
+    // Formulário
+
+    private void NovaTarefa()
+    {
+        var hoje = Estado.Hoje;
+        var data = dataSelecionada < hoje ? hoje : dataSelecionada;
+        var (inicio, fechamento) = ExpedienteNoFuso(data);
+
+        if (data == hoje)
+        {
+            var agora = FusoHorario.Horario(AgoraUtc, Agenda.Fuso);
+            var proximaHora = new TimeOnly(agora.Hour, 0).AddHours(1);
+            if (proximaHora > inicio && proximaHora > agora)
+                inicio = proximaHora;
+
+            // Expediente de hoje já encerrado: sugere a abertura do dia seguinte.
+            if (inicio >= fechamento && fechamento > ExpedienteNoFuso(data).Abertura)
+            {
+                data = data.AddDays(1);
+                (inicio, fechamento) = ExpedienteNoFuso(data);
+            }
+        }
+
+        var termino = inicio.AddHours(1);
+        if (fechamento > inicio && termino > fechamento)
+            termino = fechamento;
+
+        campos = new CamposAtividade { Data = data, Inicio = inicio, Termino = termino };
+        AbrirFormulario(ModoFormulario.Nova, null);
+    }
+
+    private void Editar(Ocorrencia ocorrencia)
+    {
+        ocorrenciaAtual = ocorrencia;
+        if (ocorrencia.Recorrente)
+        {
+            janela = Janela.EscolhaEdicao;
+            return;
+        }
+
+        campos = CamposDaOcorrencia(ocorrencia);
+        AbrirFormulario(ModoFormulario.Unica, ocorrencia);
+    }
+
+    private void AbrirEdicao(ModoFormulario modoEscolhido)
+    {
+        var ocorrencia = ocorrenciaAtual!;
+        campos = modoEscolhido == ModoFormulario.Serie ? CamposDaSerie(ocorrencia) : CamposDaOcorrencia(ocorrencia);
+        AbrirFormulario(modoEscolhido, ocorrencia);
+    }
+
+    private void Reagendar(Ocorrencia pendencia)
+    {
+        campos = CamposDaOcorrencia(pendencia);
+        campos.Data = Estado.Hoje;
+        AbrirFormulario(ModoFormulario.Reagendar, pendencia);
+    }
+
+    private void AbrirFormulario(ModoFormulario modoEscolhido, Ocorrencia? ocorrencia)
+    {
+        modo = modoEscolhido;
+        ocorrenciaAtual = ocorrencia;
+        erros = [];
+        janela = Janela.Formulario;
+    }
+
+    private async Task Salvar()
+    {
+        if (!TentarUtc(campos.Inicio, out var inicioUtc) || !TentarUtc(campos.Termino, out var terminoUtc))
+        {
+            erros = [ErroHorarioInexistente];
+            return;
+        }
+
+        try
+        {
+            erros = modo switch
+            {
+                ModoFormulario.Nova => Agenda.Criar(NovaAtividade(inicioUtc, terminoUtc), AgoraUtc),
+                ModoFormulario.Unica or ModoFormulario.Serie =>
+                    Agenda.EditarAtividade(ocorrenciaAtual!.AtividadeId, NovaAtividade(inicioUtc, terminoUtc), AgoraUtc),
+                ModoFormulario.Ocorrencia => Agenda.EditarOcorrencia(ocorrenciaAtual!.AtividadeId, ocorrenciaAtual.OriginalUtc,
+                    new DadosOcorrencia(campos.Titulo.Trim(), Descricao(), campos.Categoria, campos.Prioridade, inicioUtc, terminoUtc), AgoraUtc),
+                _ => Agenda.Reagendar(ocorrenciaAtual!.AtividadeId, ocorrenciaAtual.OriginalUtc, inicioUtc, terminoUtc, AgoraUtc)
+            };
+        }
+        catch (InvalidOperationException ex)
+        {
+            erros = [ex.Message];
+        }
+
+        if (erros.Count > 0)
+            return;
+
+        await Estado.SalvarAsync();
+        Fechar();
+    }
+
+    private Atividade NovaAtividade(DateTime inicioUtc, DateTime terminoUtc) => new()
+    {
+        Titulo = campos.Titulo.Trim(),
+        Descricao = Descricao(),
+        Categoria = campos.Categoria,
+        InicioUtc = inicioUtc,
+        TerminoUtc = terminoUtc,
+        Prioridade = campos.Prioridade,
+        Status = campos.Status,
+        Frequencia = campos.Frequencia
+    };
+
+    private string? Descricao() => string.IsNullOrWhiteSpace(campos.Descricao) ? null : campos.Descricao.Trim();
+
+    private static CamposAtividade CamposDaOcorrencia(Ocorrencia ocorrencia) => new()
+    {
+        Titulo = ocorrencia.Titulo,
+        Descricao = ocorrencia.Descricao,
+        Categoria = ocorrencia.Categoria,
+        Data = ocorrencia.Data,
+        Inicio = ocorrencia.HorarioInicio,
+        Termino = ocorrencia.HorarioTermino,
+        Prioridade = ocorrencia.Prioridade,
+        Status = ocorrencia.Status,
+        Frequencia = ocorrencia.Frequencia
+    };
+
+    /// <summary>Campos da série, com a data e o horário que a regra dá à ocorrência escolhida.</summary>
+    private CamposAtividade CamposDaSerie(Ocorrencia ocorrencia)
+    {
+        var atividade = Agenda.Atividades.First(a => a.Id == ocorrencia.AtividadeId);
+        var terminoUtc = ocorrencia.OriginalUtc + (atividade.TerminoUtc - atividade.InicioUtc);
+
+        return new CamposAtividade
+        {
+            Titulo = atividade.Titulo,
+            Descricao = atividade.Descricao,
+            Categoria = atividade.Categoria,
+            Data = ocorrencia.DataOriginal,
+            Inicio = FusoHorario.Horario(ocorrencia.OriginalUtc, Agenda.Fuso),
+            Termino = FusoHorario.Horario(terminoUtc, Agenda.Fuso),
+            Prioridade = atividade.Prioridade,
+            Status = ocorrencia.Status,
+            Frequencia = atividade.Frequencia
+        };
+    }
+
+    /// <summary>Converte a data do formulário e o horário informado, no fuso configurado, para UTC.</summary>
+    private bool TentarUtc(TimeOnly horario, out DateTime utc)
+    {
+        try
+        {
+            utc = FusoHorario.ParaUtc(campos.Data, horario, Agenda.Fuso);
+            return true;
+        }
+        catch (ArgumentException)
+        {
+            utc = default;
+            return false;
+        }
+    }
+
+    /// <summary>Abertura e fechamento do expediente de Portugal na data, no fuso configurado.</summary>
+    private (TimeOnly Abertura, TimeOnly Fechamento) ExpedienteNoFuso(DateOnly data)
+    {
+        var meioDoDia = TimeZoneInfo.ConvertTimeToUtc(data.ToDateTime(new TimeOnly(12, 0)), Agenda.Fuso);
+        var (abertura, fechamento) = ValidadorAtividade.Expediente(FusoHorario.Data(meioDoDia, FusoHorario.Portugal));
+        return (FusoHorario.Horario(abertura, Agenda.Fuso), FusoHorario.Horario(fechamento, Agenda.Fuso));
+    }
+
+    // Exclusão
+
+    private void Excluir(Ocorrencia ocorrencia)
+    {
+        ocorrenciaAtual = ocorrencia;
+        janela = ocorrencia.Recorrente ? Janela.EscolhaExclusao : Janela.ConfirmarExclusao;
+    }
+
+    private async Task ExcluirOcorrencia()
+    {
+        Agenda.ExcluirOcorrencia(ocorrenciaAtual!.AtividadeId, ocorrenciaAtual.OriginalUtc);
+        await Estado.SalvarAsync();
+        Fechar();
+    }
+
+    private async Task ExcluirSerie()
+    {
+        Agenda.ExcluirSerie(ocorrenciaAtual!.AtividadeId);
+        await Estado.SalvarAsync();
+        Fechar();
+    }
+
+    // Demonstração e fuso
+
+    private async Task Restaurar()
+    {
+        await Estado.RestaurarDemonstracaoAsync();
+        dataSelecionada = Estado.Hoje;
+        Fechar();
+    }
+
+    private void AbrirFuso()
+    {
+        buscaFuso = string.Empty;
+        fusoEscolhido = Agenda.Fuso.Id;
+        janela = Janela.Fuso;
+    }
+
+    private async Task GravarFuso()
+    {
+        await Estado.GravarFusoAsync(FusoHorario.Buscar(fusoEscolhido));
+        Fechar();
+    }
+
+    private void Fechar()
+    {
+        janela = Janela.Nenhuma;
+        ocorrenciaAtual = null;
+        erros = [];
+    }
+}

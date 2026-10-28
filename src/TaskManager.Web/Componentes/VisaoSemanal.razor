@@ -1,0 +1,48 @@
+@using TaskManager.Web.Servicos
+
+<section class="week" aria-label="Atividades da semana">
+    @foreach (var dia in Dias)
+    {
+        var ocorrencias = Agenda.OcorrenciasDoDia(dia);
+        <div class="day @(dia == Hoje ? "hoje" : "")">
+            <h2 class="day-title">
+                <button type="button" class="day-link" title="Abrir no Diário" @onclick="() => AoAbrirDia.InvokeAsync(dia)">
+                    @Formatos.DiaDaSemana(dia)<span class="day-date">@Formatos.DiaEMes(dia)</span>
+                </button>
+            </h2>
+            <ul class="day-list">
+                @if (ocorrencias.Count == 0)
+                {
+                    <li class="todo-vazio">Sem atividades</li>
+                }
+                @foreach (var ocorrencia in ocorrencias)
+                {
+                    <li>
+                        <div class="todo @(ocorrencia.Status == Status.Concluida ? "feita" : "")">
+                            <input type="checkbox" class="chk" aria-label="Concluir @ocorrencia.Titulo"
+                                   checked="@(ocorrencia.Status == Status.Concluida)"
+                                   @onchange="e => AoMarcar.InvokeAsync((ocorrencia, e.Value is true))" />
+                            <span class="todo-text" @onclick="() => AoEditar.InvokeAsync(ocorrencia)">
+                                <span class="todo-hora">@Formatos.Hora(ocorrencia.HorarioInicio)</span>@ocorrencia.Titulo
+                            </span>
+                        </div>
+                    </li>
+                }
+            </ul>
+        </div>
+    }
+</section>
+
+@code {
+    [Parameter, EditorRequired] public Agenda Agenda { get; set; } = new();
+
+    /// <summary>Datas de segunda a domingo, no fuso configurado.</summary>
+    [Parameter, EditorRequired] public IReadOnlyList<DateOnly> Dias { get; set; } = [];
+
+    [Parameter] public DateOnly Hoje { get; set; }
+    [Parameter] public EventCallback<DateOnly> AoAbrirDia { get; set; }
+    [Parameter] public EventCallback<Ocorrencia> AoEditar { get; set; }
+
+    /// <summary>Caixa de conclusão marcada (true) ou desmarcada (false).</summary>
+    [Parameter] public EventCallback<(Ocorrencia Ocorrencia, bool Marcada)> AoMarcar { get; set; }
+}

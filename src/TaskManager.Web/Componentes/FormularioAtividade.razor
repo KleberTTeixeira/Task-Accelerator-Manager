@@ -1,0 +1,132 @@
+@using TaskManager.Web.Servicos
+
+<div class="formulario">
+    @if (Modo == ModoFormulario.Reagendar)
+    {
+        <p class="form-resumo"><strong>@Campos.Titulo</strong></p>
+    }
+    else
+    {
+        <div class="mb-3">
+            <label class="form-label" for="f-titulo">Título *</label>
+            <input id="f-titulo" class="form-control" maxlength="150" @bind="Campos.Titulo" />
+        </div>
+        <div class="mb-3">
+            <label class="form-label" for="f-categoria">Categoria *</label>
+            <select id="f-categoria" class="form-select" @bind="Campos.Categoria">
+                <option value="">Selecione…</option>
+                @foreach (var categoria in Categorias.Todas)
+                {
+                    <option value="@categoria">@categoria</option>
+                }
+            </select>
+        </div>
+    }
+
+    <div class="row g-3">
+        <div class="col-12 col-sm-4">
+            <label class="form-label" for="f-data">@RotuloData *</label>
+            <input id="f-data" type="date" class="form-control" @bind="Campos.Data" />
+        </div>
+        <div class="col-6 col-sm-4">
+            <label class="form-label" for="f-inicio">Início *</label>
+            <input id="f-inicio" type="time" class="form-control" @bind="Campos.Inicio" />
+        </div>
+        <div class="col-6 col-sm-4">
+            <label class="form-label" for="f-termino">Término *</label>
+            <input id="f-termino" type="time" class="form-control" @bind="Campos.Termino" />
+        </div>
+    </div>
+    <p class="form-text">@TextoExpediente</p>
+
+    @if (Modo != ModoFormulario.Reagendar)
+    {
+        <div class="row g-3">
+            <div class="col-12 col-sm-4">
+                <label class="form-label" for="f-prioridade">Prioridade</label>
+                <select id="f-prioridade" class="form-select" @bind="Campos.Prioridade">
+                    @foreach (var prioridade in Enum.GetValues<Prioridade>())
+                    {
+                        <option value="@prioridade">@prioridade.Texto()</option>
+                    }
+                </select>
+            </div>
+            @if (Modo != ModoFormulario.Ocorrencia)
+            {
+                <div class="col-12 col-sm-4">
+                    <label class="form-label" for="f-status">Status</label>
+                    <select id="f-status" class="form-select" @bind="Campos.Status">
+                        @foreach (var status in Enum.GetValues<Status>())
+                        {
+                            <option value="@status">@status.Texto()</option>
+                        }
+                    </select>
+                </div>
+                <div class="col-12 col-sm-4">
+                    <label class="form-label" for="f-frequencia">Frequência</label>
+                    <select id="f-frequencia" class="form-select" @bind="Campos.Frequencia">
+                        @foreach (var frequencia in Enum.GetValues<Frequencia>())
+                        {
+                            <option value="@frequencia">@frequencia.Texto()</option>
+                        }
+                    </select>
+                </div>
+            }
+        </div>
+
+        @if (Modo != ModoFormulario.Ocorrencia && Campos.Frequencia != Frequencia.Unica)
+        {
+            <p class="form-text">O status escolhido vale só para a ocorrência da data de início; as outras começam como Pendente.</p>
+        }
+
+        <div class="mt-3">
+            <label class="form-label" for="f-descricao">Descrição ou observações</label>
+            <textarea id="f-descricao" class="form-control" rows="3" @bind="Campos.Descricao"></textarea>
+        </div>
+    }
+
+    @if (Modo == ModoFormulario.Serie)
+    {
+        <p class="form-text mt-3">A alteração vale a partir da data de início informada. As ocorrências anteriores e as alteradas individualmente não mudam.</p>
+    }
+
+    @if (Erros.Count > 0)
+    {
+        <div class="alert alert-danger mt-3 mb-0" role="alert">
+            <ul class="mb-0">
+                @foreach (var erro in Erros)
+                {
+                    <li>@erro</li>
+                }
+            </ul>
+        </div>
+    }
+</div>
+
+@code {
+    [Parameter, EditorRequired] public ModoFormulario Modo { get; set; }
+    [Parameter, EditorRequired] public CamposAtividade Campos { get; set; } = new();
+    [Parameter, EditorRequired] public TimeZoneInfo Fuso { get; set; } = FusoHorario.Padrao;
+    [Parameter] public IReadOnlyList<string> Erros { get; set; } = [];
+
+    private string RotuloData => Modo switch
+    {
+        ModoFormulario.Nova or ModoFormulario.Unica or ModoFormulario.Serie => "Data de início",
+        ModoFormulario.Reagendar => "Nova data",
+        _ => "Data"
+    };
+
+    /// <summary>Expediente de Portugal convertido para o fuso configurado, na data escolhida.</summary>
+    private string TextoExpediente
+    {
+        get
+        {
+            var meioDoDia = TimeZoneInfo.ConvertTimeToUtc(Campos.Data.ToDateTime(new TimeOnly(12, 0)), Fuso);
+            var (abertura, fechamento) = ValidadorAtividade.Expediente(FusoHorario.Data(meioDoDia, FusoHorario.Portugal));
+            var faixa = $"{Formatos.Hora(FusoHorario.Horario(abertura, Fuso))} às {Formatos.Hora(FusoHorario.Horario(fechamento, Fuso))}";
+            return Fuso.Id == FusoHorario.IdPortugal
+                ? $"Expediente: {faixa}."
+                : $"Expediente nesta data: {faixa} no fuso configurado (10:00 às 19:00 de Portugal).";
+        }
+    }
+}
