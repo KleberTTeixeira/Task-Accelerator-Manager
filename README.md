@@ -6,6 +6,21 @@
 
 Agenda individual de tarefas e atendimentos, pensada para a rotina de profissionais de Education e Customer Success. Organiza o dia por horário, repete atividades automaticamente, acompanha o que ficou pendente nos dias anteriores e mostra um painel com o andamento do dia.
 
+---
+
+## Sumário
+
+- [Capturas de tela e vídeo](#capturas-de-tela-e-vídeo)
+- [Guia de uso](#guia-de-uso)
+- [Regras de funcionamento](#regras-de-funcionamento)
+- [Como validar o funcionamento](#como-validar-o-funcionamento)
+- [Executar localmente (opcional)](#executar-localmente-opcional)
+- [Tecnologias e arquitetura](#tecnologias-e-arquitetura)
+- [Dados de demonstração](#dados-de-demonstração)
+- [Licença](#licença)
+
+---
+
 **Destaques**
 
 - Agenda diária ordenada por horário e visão semanal de segunda a domingo.
@@ -51,19 +66,6 @@ Basta abrir o endereço no navegador, no computador ou no celular. Não é preci
 **Nova tarefa**
 
 ![Nova tarefa](capturas/05-nova-tarefa.png)
-
----
-
-## Sumário
-
-- [Capturas de tela e vídeo](#capturas-de-tela-e-vídeo)
-- [Guia de uso](#guia-de-uso)
-- [Regras de funcionamento](#regras-de-funcionamento)
-- [Como validar o funcionamento](#como-validar-o-funcionamento)
-- [Executar localmente (opcional)](#executar-localmente-opcional)
-- [Tecnologias e arquitetura](#tecnologias-e-arquitetura)
-- [Dados de demonstração](#dados-de-demonstração)
-- [Licença](#licença)
 
 ---
 
