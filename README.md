@@ -28,14 +28,41 @@ Basta abrir o endereço no navegador, no computador ou no celular. Não é preci
 
 ---
 
+## Capturas de tela e vídeo
+
+**▶ [Assistir ao vídeo de demonstração](capturas/video.mp4)**
+
+**Agenda diária**
+
+![Agenda diária](capturas/01-agenda-diaria.png)
+
+**Filtros**
+
+![Filtros](capturas/02-filtros.png)
+
+**Recorrências na visão semanal**
+
+![Recorrências na visão semanal](capturas/03-recorrencias-semanal.png)
+
+**Pendências anteriores**
+
+![Pendências anteriores](capturas/04-pendencias-anteriores.png)
+
+**Nova tarefa**
+
+![Nova tarefa](capturas/05-nova-tarefa.png)
+
+---
+
 ## Sumário
 
+- [Capturas de tela e vídeo](#capturas-de-tela-e-vídeo)
 - [Guia de uso](#guia-de-uso)
 - [Regras de funcionamento](#regras-de-funcionamento)
-- [Dados de demonstração](#dados-de-demonstração)
 - [Como validar o funcionamento](#como-validar-o-funcionamento)
 - [Executar localmente (opcional)](#executar-localmente-opcional)
 - [Tecnologias e arquitetura](#tecnologias-e-arquitetura)
+- [Dados de demonstração](#dados-de-demonstração)
 - [Licença](#licença)
 
 ---
@@ -171,67 +198,6 @@ Atendimento e Suporte, Projetos, Feedbacks, Acompanhamento, Comunidade, Customer
 
 ---
 
-## Dados de demonstração
-
-A demonstração simula a rotina de uma profissional de Education e Customer Success (horários de Portugal). Ela é carregada automaticamente no primeiro acesso e pelo botão **Restaurar demonstração**.
-
-### Diárias (segunda a sexta)
-
-As diárias e as semanais começam cerca de duas semanas antes do primeiro acesso, para que já existam histórico e pendências anteriores. Parte das ocorrências passadas aparece como Concluída e parte como Pendente ou Em andamento.
-
-| Horário | Atividade | Categoria | Prioridade |
-|---|---|---|---|
-| 10:00–10:45 | Responder e-mails e demandas de suporte | Atendimento e Suporte | Alta |
-| 10:45–11:30 | Atendimento aos talentos | Atendimento e Suporte | Alta |
-| 11:30–12:15 | Correção de projetos | Projetos | Média |
-| 12:15–13:00 | Elaboração e envio de feedbacks | Feedbacks | Média |
-| 14:00–14:45 | Acompanhamento dos talentos | Acompanhamento | Média |
-| 14:45–15:30 | Criação de novos projetos | Projetos | Baixa |
-
-O intervalo das 13:00 às 14:00 fica livre.
-
-### Semanais
-
-| Dia | Horário | Atividade | Categoria | Prioridade |
-|---|---|---|---|---|
-| Segunda-feira | 15:30–16:00 | Revisão de prioridades da semana | Planejamento | Alta |
-| Segunda-feira | 16:00–16:30 | Gerenciamento da comunidade | Comunidade | Baixa |
-| Quarta-feira | 15:30–16:00 | Gerenciamento da comunidade | Comunidade | Baixa |
-| Sexta-feira | 15:30–16:00 | Gerenciamento da comunidade | Comunidade | Baixa |
-
-### Quinzenais
-
-| Início | Horário | Atividade | Categoria | Prioridade |
-|---|---|---|---|---|
-| 03/11/2026 | 16:00–17:00 | Análise de métricas de Customer Success | Customer Success | Alta |
-| 05/11/2026 | 16:00–17:00 | Análise de dados operacionais | Análise de Dados | Média |
-| 06/11/2026 | 16:00–17:00 | Análise de métricas de marketing | Marketing | Média |
-
-### Mensais
-
-| Início | Horário | Atividade | Categoria | Prioridade |
-|---|---|---|---|---|
-| 10/11/2026 | 16:00–17:00 | Planejamento de treinamentos e cursos | Treinamentos | Média |
-| 12/11/2026 | 16:00–17:00 | Organização de webinars | Webinars | Baixa |
-| 17/11/2026 | 16:00–17:00 | Organização da mentoria mensal | Mentorias | Média |
-| 19/11/2026 | 17:00–18:00 | Realização da mentoria mensal | Mentorias | Alta |
-| 24/11/2026 | 16:00–17:00 | Análise de reputação e satisfação dos clientes | Estratégia e Reputação | Alta |
-
-### Pontuais (frequência Única)
-
-Datas contadas a partir do primeiro acesso:
-
-| Quando | Horário | Atividade | Categoria | Prioridade | Status |
-|---|---|---|---|---|---|
-| 4 dias antes | 17:00–18:00 | Atualizar materiais de treinamento | Treinamentos | Média | Concluída |
-| 2 dias antes | 16:30–17:30 | Revisar o conteúdo de um novo curso | Treinamentos | Alta | Pendente |
-| No dia | 17:00–18:00 | Investigar uma queda em um indicador de satisfação | Estratégia e Reputação | Alta | Pendente |
-| 2 dias depois | 16:30–17:30 | Preparar uma apresentação especial | Outras | Média | Pendente |
-
-Todos os dados são fictícios.
-
----
-
 ## Como validar o funcionamento
 
 Roteiro rápido para conferir as principais funções, a partir da demonstração:
@@ -314,6 +280,67 @@ TaskManager.sln
 └── tests/
     └── TaskManager.Tests/    Testes automatizados das regras de negócio
 ```
+
+---
+
+## Dados de demonstração
+
+A demonstração simula a rotina de uma profissional de Education e Customer Success (horários de Portugal). Ela é carregada automaticamente no primeiro acesso e pelo botão **Restaurar demonstração**.
+
+### Diárias (segunda a sexta)
+
+As diárias e as semanais começam cerca de duas semanas antes do primeiro acesso, para que já existam histórico e pendências anteriores. Parte das ocorrências passadas aparece como Concluída e parte como Pendente ou Em andamento.
+
+| Horário | Atividade | Categoria | Prioridade |
+|---|---|---|---|
+| 10:00–10:45 | Responder e-mails e demandas de suporte | Atendimento e Suporte | Alta |
+| 10:45–11:30 | Atendimento aos talentos | Atendimento e Suporte | Alta |
+| 11:30–12:15 | Correção de projetos | Projetos | Média |
+| 12:15–13:00 | Elaboração e envio de feedbacks | Feedbacks | Média |
+| 14:00–14:45 | Acompanhamento dos talentos | Acompanhamento | Média |
+| 14:45–15:30 | Criação de novos projetos | Projetos | Baixa |
+
+O intervalo das 13:00 às 14:00 fica livre.
+
+### Semanais
+
+| Dia | Horário | Atividade | Categoria | Prioridade |
+|---|---|---|---|---|
+| Segunda-feira | 15:30–16:00 | Revisão de prioridades da semana | Planejamento | Alta |
+| Segunda-feira | 16:00–16:30 | Gerenciamento da comunidade | Comunidade | Baixa |
+| Quarta-feira | 15:30–16:00 | Gerenciamento da comunidade | Comunidade | Baixa |
+| Sexta-feira | 15:30–16:00 | Gerenciamento da comunidade | Comunidade | Baixa |
+
+### Quinzenais
+
+| Início | Horário | Atividade | Categoria | Prioridade |
+|---|---|---|---|---|
+| 03/11/2026 | 16:00–17:00 | Análise de métricas de Customer Success | Customer Success | Alta |
+| 05/11/2026 | 16:00–17:00 | Análise de dados operacionais | Análise de Dados | Média |
+| 06/11/2026 | 16:00–17:00 | Análise de métricas de marketing | Marketing | Média |
+
+### Mensais
+
+| Início | Horário | Atividade | Categoria | Prioridade |
+|---|---|---|---|---|
+| 10/11/2026 | 16:00–17:00 | Planejamento de treinamentos e cursos | Treinamentos | Média |
+| 12/11/2026 | 16:00–17:00 | Organização de webinars | Webinars | Baixa |
+| 17/11/2026 | 16:00–17:00 | Organização da mentoria mensal | Mentorias | Média |
+| 19/11/2026 | 17:00–18:00 | Realização da mentoria mensal | Mentorias | Alta |
+| 24/11/2026 | 16:00–17:00 | Análise de reputação e satisfação dos clientes | Estratégia e Reputação | Alta |
+
+### Pontuais (frequência Única)
+
+Datas contadas a partir do primeiro acesso:
+
+| Quando | Horário | Atividade | Categoria | Prioridade | Status |
+|---|---|---|---|---|---|
+| 4 dias antes | 17:00–18:00 | Atualizar materiais de treinamento | Treinamentos | Média | Concluída |
+| 2 dias antes | 16:30–17:30 | Revisar o conteúdo de um novo curso | Treinamentos | Alta | Pendente |
+| No dia | 17:00–18:00 | Investigar uma queda em um indicador de satisfação | Estratégia e Reputação | Alta | Pendente |
+| 2 dias depois | 16:30–17:30 | Preparar uma apresentação especial | Outras | Média | Pendente |
+
+Todos os dados são fictícios.
 
 ---
 
