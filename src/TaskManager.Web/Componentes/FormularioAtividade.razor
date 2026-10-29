@@ -1,4 +1,5 @@
 @using TaskManager.Web.Servicos
+@inject IJSRuntime JS
 
 <div class="formulario">
     @if (Modo == ModoFormulario.Reagendar)
@@ -9,7 +10,20 @@
     {
         <div class="mb-3">
             <label class="form-label" for="f-titulo">Título *</label>
-            <input id="f-titulo" class="form-control" maxlength="150" @bind="Campos.Titulo" />
+            <div class="input-group">
+                <input id="f-titulo" class="form-control" maxlength="@TamanhoTitulo" @bind="Campos.Titulo" @onfocus="() => tituloFocado = true" />
+                <button type="button" class="btn btn-outline-secondary btn-emoji" title="Inserir emoji" aria-label="Inserir emoji"
+                        aria-expanded="@emojisAbertos" @onclick="() => emojisAbertos = !emojisAbertos">😀</button>
+            </div>
+            @if (emojisAbertos)
+            {
+                <div class="emojis" role="group" aria-label="Emojis">
+                    @foreach (var emoji in Emojis)
+                    {
+                        <button type="button" class="emoji" @onclick="() => InserirEmoji(emoji)">@emoji</button>
+                    }
+                </div>
+            }
         </div>
         <div class="mb-3">
             <label class="form-label" for="f-categoria">Categoria *</label>
@@ -108,6 +122,53 @@
     [Parameter, EditorRequired] public CamposAtividade Campos { get; set; } = new();
     [Parameter, EditorRequired] public TimeZoneInfo Fuso { get; set; } = FusoHorario.Padrao;
     [Parameter] public IReadOnlyList<string> Erros { get; set; } = [];
+
+    private const int TamanhoTitulo = 150;
+
+    private static readonly string[] Emojis =
+    [
+        "✅", "📅", "⏰", "📞", "💬", "📧", "📊", "📈", "📉", "📋",
+        "📝", "📌", "📎", "📁", "💻", "🎓", "📚", "🎥", "🎤", "👥",
+        "🤝", "🙋", "👍", "👏", "⭐", "🏆", "🎯", "🚀", "💡", "🔍",
+        "⚠️", "❗", "🔥", "⏳", "🔄", "🛠️", "💰", "❤️", "😊", "🎉",
+        "🥰", "🤗", "😻", "🐶", "🐱", "🐰", "🦄", "🌸", "🌈", "💖"
+    ];
+
+    private bool emojisAbertos;
+    private bool tituloFocado;
+    private int? posicaoCursor;
+
+    /// <summary>
+    /// Insere o emoji onde está o cursor do título (ou no fim, se o campo ainda não recebeu o foco), sem passar do
+    /// tamanho máximo, e fecha a lista.
+    /// </summary>
+    private async Task InserirEmoji(string emoji)
+    {
+        emojisAbertos = false;
+        var titulo = Campos.Titulo ?? string.Empty;
+        int inicio = titulo.Length, fim = titulo.Length;
+
+        if (tituloFocado && await JS.InvokeAsync<int[]?>("cursorCampo.selecao", "f-titulo") is [var a, var b])
+        {
+            inicio = Math.Clamp(a, 0, titulo.Length);
+            fim = Math.Clamp(b, inicio, titulo.Length);
+        }
+
+        if (titulo.Length - (fim - inicio) + emoji.Length > TamanhoTitulo)
+            return;
+
+        Campos.Titulo = titulo[..inicio] + emoji + titulo[fim..];
+        posicaoCursor = inicio + emoji.Length;
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (posicaoCursor is not int posicao)
+            return;
+
+        posicaoCursor = null;
+        await JS.InvokeVoidAsync("cursorCampo.posicionar", "f-titulo", posicao);
+    }
 
     private string RotuloData => Modo switch
     {

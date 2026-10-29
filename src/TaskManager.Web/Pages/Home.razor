@@ -273,7 +273,7 @@ else
                 <ChildContent>
                     <p class="form-text mt-0">As datas e os horários são exibidos no fuso escolhido.</p>
                     <label class="form-label" for="f-busca-fuso">Buscar</label>
-                    <input id="f-busca-fuso" class="form-control mb-2" placeholder="Ex.: Lisbon, Sao_Paulo" @bind="buscaFuso" @bind:event="oninput" />
+                    <input id="f-busca-fuso" class="form-control mb-2" placeholder="Ex.: Lisboa, São Paulo" @bind="buscaFuso" @bind:event="oninput" />
                     <select class="form-select" size="10" aria-label="Fusos horários" @bind="fusoEscolhido">
                         @foreach (var fuso in FusosEncontrados)
                         {
@@ -340,8 +340,7 @@ else
     };
 
     private IEnumerable<TimeZoneInfo> FusosEncontrados =>
-        FusoHorario.Todos().Where(f => string.IsNullOrWhiteSpace(buscaFuso)
-            || f.Id.Contains(buscaFuso.Trim().Replace(' ', '_'), StringComparison.OrdinalIgnoreCase));
+        FusoHorario.Todos().Where(f => Formatos.FusoCorresponde(f, buscaFuso));
 
     protected override async Task OnInitializedAsync()
     {

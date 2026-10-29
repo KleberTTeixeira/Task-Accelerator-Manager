@@ -29,11 +29,69 @@ public static class Formatos
 
     public static string Hora(TimeOnly horario) => horario.ToString("HH:mm", CultureInfo.InvariantCulture);
 
+    /// <summary>Nomes em pt-BR dos fusos mais usados. Os outros mostram o id com espaço no lugar do sublinhado.</summary>
+    private static readonly Dictionary<string, string> NomesFuso = new()
+    {
+        ["Europe/Lisbon"] = "Lisboa (Portugal)",
+        ["Atlantic/Madeira"] = "Madeira (Portugal)",
+        ["Atlantic/Azores"] = "Açores (Portugal)",
+        ["America/Sao_Paulo"] = "São Paulo / Brasília (Brasil)",
+        ["America/Noronha"] = "Fernando de Noronha (Brasil)",
+        ["America/Bahia"] = "Salvador (Brasil)",
+        ["America/Fortaleza"] = "Fortaleza (Brasil)",
+        ["America/Recife"] = "Recife (Brasil)",
+        ["America/Maceio"] = "Maceió (Brasil)",
+        ["America/Belem"] = "Belém (Brasil)",
+        ["America/Araguaina"] = "Araguaína (Brasil)",
+        ["America/Manaus"] = "Manaus (Brasil)",
+        ["America/Cuiaba"] = "Cuiabá (Brasil)",
+        ["America/Campo_Grande"] = "Campo Grande (Brasil)",
+        ["America/Porto_Velho"] = "Porto Velho (Brasil)",
+        ["America/Boa_Vista"] = "Boa Vista (Brasil)",
+        ["America/Rio_Branco"] = "Rio Branco (Brasil)",
+        ["Europe/London"] = "Londres (Reino Unido)",
+        ["Europe/Madrid"] = "Madri (Espanha)",
+        ["Europe/Paris"] = "Paris (França)",
+        ["Europe/Berlin"] = "Berlim (Alemanha)",
+        ["America/New_York"] = "Nova York (Estados Unidos)",
+        ["Africa/Luanda"] = "Luanda (Angola)",
+        ["Africa/Maputo"] = "Maputo (Moçambique)"
+    };
+
+    private const string ComAcento = "áàâãäéèêëíìîïóòôõöúùûüçÁÀÂÃÄÉÈÊËÍÌÎÏÓÒÔÕÖÚÙÛÜÇ";
+    private const string SemAcento = "aaaaaeeeeiiiiooooouuuucAAAAAEEEEIIIIOOOOOUUUUC";
+
+    public static string NomeFuso(TimeZoneInfo fuso) =>
+        NomesFuso.TryGetValue(fuso.Id, out var nome) ? nome : fuso.Id.Replace('_', ' ');
+
     public static string Fuso(TimeZoneInfo fuso, DateTime agoraUtc)
     {
         var diferenca = fuso.GetUtcOffset(agoraUtc);
         var sinal = diferenca < TimeSpan.Zero ? "-" : "+";
-        return $"(UTC{sinal}{diferenca.Duration():hh\\:mm}) {fuso.Id}";
+        return $"(UTC{sinal}{diferenca.Duration():hh\\:mm}) {NomeFuso(fuso)}";
+    }
+
+    /// <summary>Busca do fuso pelo nome exibido ou pelo id, sem diferenciar maiúsculas, acentos, espaço e sublinhado.</summary>
+    public static bool FusoCorresponde(TimeZoneInfo fuso, string busca)
+    {
+        if (string.IsNullOrWhiteSpace(busca))
+            return true;
+
+        var termo = ParaBusca(busca.Trim());
+        return ParaBusca(NomeFuso(fuso)).Contains(termo, StringComparison.OrdinalIgnoreCase)
+            || ParaBusca(fuso.Id).Contains(termo, StringComparison.OrdinalIgnoreCase);
+    }
+
+    private static string ParaBusca(string texto)
+    {
+        var letras = texto.Replace('_', ' ').ToCharArray();
+        for (var i = 0; i < letras.Length; i++)
+        {
+            var posicao = ComAcento.IndexOf(letras[i]);
+            if (posicao >= 0)
+                letras[i] = SemAcento[posicao];
+        }
+        return new string(letras);
     }
 
     public static string ClassePrioridade(Prioridade prioridade) => prioridade switch

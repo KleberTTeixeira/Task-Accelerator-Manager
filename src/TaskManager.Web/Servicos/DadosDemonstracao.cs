@@ -15,6 +15,7 @@ public static class DadosDemonstracao
 
     public static Agenda Criar(DateTime agoraUtc)
     {
+        //return new Agenda(); Inicia sem registros de teste - agenda zerada
         var hoje = FusoHorario.Data(agoraUtc, FusoHorario.Portugal);
         var inicio = hoje.AddDays(-DiasAntes);
         var atividades = new List<Atividade>();
