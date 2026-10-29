@@ -8,19 +8,6 @@ Agenda individual de tarefas e atendimentos, pensada para a rotina de profission
 
 ---
 
-## Sumário
-
-- [Capturas de tela e vídeo](#capturas-de-tela-e-vídeo)
-- [Guia de uso](#guia-de-uso)
-- [Regras de funcionamento](#regras-de-funcionamento)
-- [Como validar o funcionamento](#como-validar-o-funcionamento)
-- [Executar localmente (opcional)](#executar-localmente-opcional)
-- [Tecnologias e arquitetura](#tecnologias-e-arquitetura)
-- [Dados de demonstração](#dados-de-demonstração)
-- [Licença](#licença)
-
----
-
 **Destaques**
 
 - Agenda diária ordenada por horário e visão semanal de segunda a domingo.
@@ -40,6 +27,19 @@ Agenda individual de tarefas e atendimentos, pensada para a rotina de profission
 **➜ https://klebertteixeira.github.io/Task-Accelerator-Manager/**
 
 Basta abrir o endereço no navegador, no computador ou no celular. Não é preciso instalar nada nem criar conta. Na primeira abertura, a agenda já vem com uma rotina de demonstração carregada, para que todas as funções possam ser vistas em uso.
+
+---
+
+## Sumário
+
+- [Capturas de tela e vídeo](#capturas-de-tela-e-vídeo)
+- [Guia de uso](#guia-de-uso)
+- [Regras de funcionamento](#regras-de-funcionamento)
+- [Como validar o funcionamento](#como-validar-o-funcionamento)
+- [Executar localmente (opcional)](#executar-localmente-opcional)
+- [Tecnologias e arquitetura](#tecnologias-e-arquitetura)
+- [Dados de demonstração](#dados-de-demonstração)
+- [Licença](#licença)
 
 ---
 
