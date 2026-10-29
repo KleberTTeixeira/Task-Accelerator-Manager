@@ -86,8 +86,37 @@
         <a href="." class="reload">Recarregar</a>
         <span class="dismiss">🗙</span>
     </div>
+    <noscript>
+        <style>#app { display: none; }</style>
+        <section class="aviso-bloqueio">
+            <h1>O navegador está bloqueando recursos necessários para a agenda</h1>
+            <p>Para a agenda funcionar, libere neste navegador:</p>
+            <ul>
+                <li><strong>JavaScript</strong>: é o que faz a agenda funcionar dentro do navegador.</li>
+            </ul>
+            <div class="aviso-seguranca"><strong>A liberação é segura.</strong> A agenda guarda os dados somente neste navegador, no seu próprio aparelho. Nada é enviado para servidores, e não há login, anúncios nem rastreamento. A liberação é necessária para a agenda abrir e guardar as suas tarefas.</div>
+            <h2>Como liberar o JavaScript</h2>
+            <details><summary>Google Chrome (computador)</summary><ol>
+                <li>Copie e cole na barra de endereço: <code>chrome://settings/content/javascript</code></li>
+                <li>Marque <em>Os sites podem usar JavaScript</em>, ou adicione este site em <em>Permitido usar JavaScript</em>.</li>
+                <li>Volte para esta página e recarregue.</li></ol></details>
+            <details><summary>Microsoft Edge (computador)</summary><ol>
+                <li>Copie e cole na barra de endereço: <code>edge://settings/content/javascript</code></li>
+                <li>Ative <em>Permitido</em>, ou adicione este site em <em>Permitir</em>.</li>
+                <li>Volte para esta página e recarregue.</li></ol></details>
+            <details><summary>Mozilla Firefox (computador)</summary><ol>
+                <li>Copie e cole na barra de endereço: <code>about:config</code> e confirme o aviso.</li>
+                <li>Procure <code>javascript.enabled</code> e deixe o valor em <em>true</em>.</li>
+                <li>Volte para esta página e recarregue.</li></ol></details>
+            <details><summary>Safari (Mac, iPhone e iPad)</summary><ol>
+                <li>No Mac: menu <em>Safari</em> → <em>Ajustes</em> → <em>Segurança</em> e marque <em>Ativar JavaScript</em>.</li>
+                <li>No iPhone ou iPad: <em>Ajustes</em> → <em>Safari</em> (nas versões mais novas, <em>Ajustes</em> → <em>Apps</em> → <em>Safari</em>) → <em>Avançado</em> e ative <em>JavaScript</em>.</li>
+                <li>Volte para esta página e recarregue.</li></ol></details>
+        </section>
+    </noscript>
     <script src="js/cursor.js"></script>
-    <script src="_framework/blazor.webassembly#[.{fingerprint}].js"></script>
+    <script src="_framework/blazor.webassembly#[.{fingerprint}].js" autostart="false"></script>
+    <script src="js/verificacao.js"></script>
 </body>
 
 </html>
