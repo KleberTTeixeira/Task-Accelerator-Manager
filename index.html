@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Agenda de Tarefas</title>
+    <base href="/Task-Accelerator-Manager/" />
+    <link href="_framework/dotnet.5kvgpeka7g.js" rel="preload" as="script" fetchpriority="high" crossorigin="anonymous" integrity="sha256-O4v7YVJwlRuUI6al002LvA8rc1aWDBQzmWnafY5y93w=" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="css/app.css" />
+    <link rel="icon" type="image/png" href="favicon.png" />
+    <link href="TaskManager.Web.styles.css" rel="stylesheet" />
+    <script type="importmap">{
+  "imports": {
+    "./_framework/blazor.webassembly.js": "./_framework/blazor.webassembly.w3qd1tpl0e.js",
+    "./_framework/dotnet.js": "./_framework/dotnet.5kvgpeka7g.js",
+    "./_framework/dotnet.native.js": "./_framework/dotnet.native.q38003gvqi.js",
+    "./_framework/dotnet.runtime.js": "./_framework/dotnet.runtime.azrfhwb804.js"
+  },
+  "scopes": {},
+  "integrity": {
+    "./_framework/blazor.webassembly.js": "sha256-lDXsDYFgm62F+YUvxES7IOTCXYpiHpU3uR45YdC6mq4=",
+    "./_framework/blazor.webassembly.w3qd1tpl0e.js": "sha256-lDXsDYFgm62F+YUvxES7IOTCXYpiHpU3uR45YdC6mq4=",
+    "./_framework/dotnet.5kvgpeka7g.js": "sha256-O4v7YVJwlRuUI6al002LvA8rc1aWDBQzmWnafY5y93w=",
+    "./_framework/dotnet.js": "sha256-O4v7YVJwlRuUI6al002LvA8rc1aWDBQzmWnafY5y93w=",
+    "./_framework/dotnet.native.js": "sha256-BtUMevCTTpUK4I5d68LtBZlJdGIQC7fk+oNnjyzuFR4=",
+    "./_framework/dotnet.native.q38003gvqi.js": "sha256-BtUMevCTTpUK4I5d68LtBZlJdGIQC7fk+oNnjyzuFR4=",
+    "./_framework/dotnet.runtime.azrfhwb804.js": "sha256-muN076HgyOCoAaid7zD7a2/GN7aQ7tmK/BzdnKgw78g=",
+    "./_framework/dotnet.runtime.js": "sha256-muN076HgyOCoAaid7zD7a2/GN7aQ7tmK/BzdnKgw78g="
+  }
+}</script>
+</head>
+
+<body>
+    <!-- Sprite de ícones -->
+    <svg class="sprite" aria-hidden="true">
+        <symbol id="i-calendar" viewBox="0 0 64 60">
+            <path fill-rule="evenodd" fill="currentColor" d="M2 8H10V0H17V8H47V0H54V8H62A2 2 0 0 1 64 10V58A2 2 0 0 1 62 60H2A2 2 0 0 1 0 58V10A2 2 0 0 1 2 8ZM39 30H53V43H39Z" />
+        </symbol>
+        <symbol id="i-arrow" viewBox="0 0 16 16">
+            <circle cx="8" cy="8" r="8" fill="currentColor" />
+            <path d="M4.2 8h7.2M8.4 5l3 3-3 3" fill="none" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" />
+        </symbol>
+        <symbol id="i-trash" viewBox="0 0 16 16">
+            <path d="M6 1.5h4l.6 1H14V4H2V2.5h3.4zM3 5.2h10l-.8 9.3H3.8z" fill="currentColor" />
+        </symbol>
+        <symbol id="i-eject" viewBox="0 0 16 16">
+            <path d="M8 2.5 13.5 9h-11zM2.5 11h11v2.5h-11z" fill="currentColor" />
+        </symbol>
+        <symbol id="i-archive" viewBox="0 0 16 16">
+            <path d="M1.5 2.5h13v3h-13zM2.5 6.5h11v7a1 1 0 0 1-1 1h-9a1 1 0 0 1-1-1z" fill="currentColor" />
+            <path d="M6 9h4" stroke="#fff" stroke-width="1.2" stroke-linecap="round" />
+        </symbol>
+        <symbol id="i-check-circle" viewBox="0 0 16 16">
+            <circle cx="8" cy="8" r="7.5" fill="currentColor" />
+            <path d="m4.7 8.2 2.2 2.2 4.4-4.8" fill="none" stroke="#fff" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" />
+        </symbol>
+        <symbol id="i-clock" viewBox="0 0 16 16">
+            <circle cx="8" cy="8" r="6.5" fill="none" stroke="currentColor" stroke-width="1.4" />
+            <path d="M8 4.5V8l2.5 1.5" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" />
+        </symbol>
+        <symbol id="i-checkbox" viewBox="0 0 16 16">
+            <rect x="2" y="2" width="12" height="12" rx="2" fill="none" stroke="currentColor" stroke-width="1.3" />
+            <path d="m5 8.2 2 2 4-4.4" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round" />
+        </symbol>
+        <symbol id="i-restore" viewBox="0 0 16 16">
+            <path d="M2.5 8a5.5 5.5 0 1 0 1.7-4M2.3 1.8v2.6h2.6" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
+        </symbol>
+        <symbol id="i-globe" viewBox="0 0 16 16">
+            <circle cx="8" cy="8" r="6.5" fill="none" stroke="currentColor" stroke-width="1.4" />
+            <path d="M1.5 8h13M8 1.5c2 2 2 11 0 13M8 1.5c-2 2-2 11 0 13" fill="none" stroke="currentColor" stroke-width="1.2" />
+        </symbol>
+        <symbol id="i-pencil" viewBox="0 0 16 16">
+            <path d="M11 2.2 13.8 5 5.6 13.2 2.2 13.8l.6-3.4z" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round" />
+        </symbol>
+        <symbol id="i-chevron-left" viewBox="0 0 16 16">
+            <path d="M10 3 5 8l5 5" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" />
+        </symbol>
+        <symbol id="i-chevron-right" viewBox="0 0 16 16">
+            <path d="m6 3 5 5-5 5" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" />
+        </symbol>
+        <symbol id="i-repeat" viewBox="0 0 16 16">
+            <path d="M2.5 7V6a2 2 0 0 1 2-2h8M10.5 2l2 2-2 2M13.5 9v1a2 2 0 0 1-2 2h-8M5.5 14l-2-2 2-2" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" />
+        </symbol>
+        <symbol id="i-filter" viewBox="0 0 16 16">
+            <path d="M2 3h12l-4.5 5.5V13l-3 1.5v-6z" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round" />
+        </symbol>
+    </svg>
+
+    <div id="app">
+        <svg class="loading-progress">
+            <circle r="40%" cx="50%" cy="50%" />
+            <circle r="40%" cx="50%" cy="50%" />
+        </svg>
+        <div class="loading-progress-text"></div>
+    </div>
+
+    <div id="blazor-error-ui">
+        Ocorreu um erro inesperado.
+        <a href="." class="reload">Recarregar</a>
+        <span class="dismiss">🗙</span>
+    </div>
+    <noscript>
+        <style>#app { display: none; }</style>
+        <section class="aviso-bloqueio">
+            <h1>O navegador está bloqueando recursos necessários para a agenda</h1>
+            <p>Para a agenda funcionar, libere neste navegador:</p>
+            <ul>
+                <li><strong>JavaScript</strong>: é o que faz a agenda funcionar dentro do navegador.</li>
+            </ul>
+            <div class="aviso-seguranca"><strong>A liberação é segura.</strong> A agenda guarda os dados somente neste navegador, no seu próprio aparelho. Nada é enviado para servidores, e não há login, anúncios nem rastreamento. A liberação é necessária para a agenda abrir e guardar as suas tarefas.</div>
+            <h2>Como liberar o JavaScript</h2>
+            <details><summary>Google Chrome (computador)</summary><ol>
+                <li>Copie e cole na barra de endereço: <code>chrome://settings/content/javascript</code></li>
+                <li>Marque <em>Os sites podem usar JavaScript</em>, ou adicione este site em <em>Permitido usar JavaScript</em>.</li>
+                <li>Volte para esta página e recarregue.</li></ol></details>
+            <details><summary>Microsoft Edge (computador)</summary><ol>
+                <li>Copie e cole na barra de endereço: <code>edge://settings/content/javascript</code></li>
+                <li>Ative <em>Permitido</em>, ou adicione este site em <em>Permitir</em>.</li>
+                <li>Volte para esta página e recarregue.</li></ol></details>
+            <details><summary>Mozilla Firefox (computador)</summary><ol>
+                <li>Copie e cole na barra de endereço: <code>about:config</code> e confirme o aviso.</li>
+                <li>Procure <code>javascript.enabled</code> e deixe o valor em <em>true</em>.</li>
+                <li>Volte para esta página e recarregue.</li></ol></details>
+            <details><summary>Safari (Mac, iPhone e iPad)</summary><ol>
+                <li>No Mac: menu <em>Safari</em> → <em>Ajustes</em> → <em>Segurança</em> e marque <em>Ativar JavaScript</em>.</li>
+                <li>No iPhone ou iPad: <em>Ajustes</em> → <em>Safari</em> (nas versões mais novas, <em>Ajustes</em> → <em>Apps</em> → <em>Safari</em>) → <em>Avançado</em> e ative <em>JavaScript</em>.</li>
+                <li>Volte para esta página e recarregue.</li></ol></details>
+        </section>
+    </noscript>
+    <script src="js/cursor.js"></script>
+    <script src="_framework/blazor.webassembly.w3qd1tpl0e.js" autostart="false"></script>
+    <script src="js/verificacao.js"></script>
+</body>
+
+</html>
