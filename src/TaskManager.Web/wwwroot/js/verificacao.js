@@ -33,7 +33,8 @@ window.verificacaoNavegador = {
   mostrarAviso: function (bloqueios) {
     var itens = {
       armazenamento: "<li><strong>Armazenamento de dados do site</strong> (cookies e dados do site): é onde a agenda guarda as suas tarefas.</li>",
-      webassembly: "<li><strong>WebAssembly</strong>: é a tecnologia que faz a agenda funcionar dentro do navegador.</li>"
+      webassembly: "<li><strong>WebAssembly</strong>: é a tecnologia que faz a agenda funcionar dentro do navegador.</li>",
+      arquivos: "<li><strong>Arquivos da agenda</strong>: o navegador recusou arquivos necessários para a agenda abrir.</li>"
     };
 
     var comoLiberar = {
@@ -59,7 +60,15 @@ window.verificacaoNavegador = {
         "<h2>Como liberar o WebAssembly</h2>" +
         "<p>Todos os navegadores atuais (Chrome, Edge, Firefox e Safari) têm o WebAssembly ligado por padrão. " +
         "Se ele está bloqueado, a causa costuma ser um modo de segurança reforçada do navegador ou do sistema. " +
-        "Desative esse modo para este site, ou abra a agenda em outro navegador atualizado.</p>"
+        "Desative esse modo para este site, ou abra a agenda em outro navegador atualizado.</p>",
+      arquivos:
+        "<h2>Como liberar os arquivos da agenda</h2><ol>" +
+        "<li>Abra a agenda em uma janela anônima. Se abrir, a causa é o cache ou uma extensão do navegador.</li>" +
+        "<li>Desative as extensões do navegador para este site.</li>" +
+        "<li>Limpe só as imagens e os arquivos em cache. No Chrome: copie e cole na barra de endereço <code>chrome://settings/clearBrowserData</code>, " +
+        "marque somente <em>Imagens e arquivos armazenados em cache</em> e clique em <em>Excluir dados</em>. " +
+        "<strong>Não marque <em>Cookies e outros dados do site</em></strong>: isso apaga as suas tarefas.</li>" +
+        "<li>Volte para esta página e clique em <em>Tentar de novo</em>.</li></ol>"
     };
 
     var lista = "";
@@ -83,13 +92,76 @@ window.verificacaoNavegador = {
       "</section>";
   },
 
+  // Baixa um arquivo da agenda conferindo a integridade. Resposta com erro (ex.: 503) também conta como falha.
+  baixar: function (endereco, integridade, modoCache) {
+    var opcoes = { cache: modoCache };
+    if (integridade) opcoes.integrity = integridade;
+    return fetch(endereco, opcoes).then(function (resposta) {
+      if (!resposta.ok) throw new Error("Falha ao baixar " + endereco + ": " + resposta.status);
+      return resposta;
+    });
+  },
+
+  // Chamado pelo Blazor para cada arquivo. Se a cópia guardada no navegador ou o download falhar,
+  // baixa de novo ignorando o cache, o que também substitui a cópia ruim guardada.
+  carregarArquivo: function (tipo, nome, endereco, integridade) {
+    var tiposTratados = ["assembly", "pdb", "globalization", "dotnetwasm"];
+    if (tiposTratados.indexOf(tipo) < 0) return;
+
+    var self = this;
+    return self.baixar(endereco, integridade, "force-cache")
+      .catch(function () {
+        return self.baixar(endereco, integridade, "reload");
+      })
+      .catch(function () {
+        return new Promise(function (resolver) { setTimeout(resolver, 1000); }).then(function () {
+          return self.baixar(endereco, integridade, "reload");
+        });
+      })
+      .catch(function (erro) {
+        // O Blazor não rejeita o Blazor.start() quando um arquivo falha; por isso a falha final é tratada aqui.
+        self.falhaAoIniciar();
+        throw erro;
+      });
+  },
+
+  // A marca evita recarregar a página sem parar quando a falha continua.
+  marcaRecarga: "taskmanager:recarregou",
+
+  falhaAoIniciar: function () {
+    if (this.falhou) return;
+    this.falhou = true;
+    var jaRecarregou = false;
+    try {
+      jaRecarregou = window.sessionStorage.getItem(this.marcaRecarga) === "1";
+      if (!jaRecarregou) window.sessionStorage.setItem(this.marcaRecarga, "1");
+    } catch (e) {
+      jaRecarregou = true;
+    }
+    if (jaRecarregou) {
+      this.mostrarAviso(["arquivos"]);
+      return;
+    }
+    location.reload();
+  },
+
   iniciar: function () {
     var bloqueios = this.bloqueios();
     if (bloqueios.length > 0) {
       this.mostrarAviso(bloqueios);
       return;
     }
-    Blazor.start();
+
+    var self = this;
+    Promise.resolve(Blazor.start({
+      loadBootResource: function (tipo, nome, endereco, integridade) {
+        return self.carregarArquivo(tipo, nome, endereco, integridade);
+      }
+    })).then(function () {
+      try { window.sessionStorage.removeItem(self.marcaRecarga); } catch (e) { }
+    }, function () {
+      self.falhaAoIniciar();
+    });
   }
 };
 
